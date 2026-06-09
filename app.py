@@ -11,7 +11,7 @@ load_dotenv()
 
 # --- Page Configuration & Styling ---
 st.set_page_config(
-    page_title="AI Trip Planner | Layla.ai POC",
+    page_title="AI Trip Planner",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -19,65 +19,97 @@ st.set_page_config(
 # Custom premium styling using glassmorphism and HSL-based palettes
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         
-        /* Apply global font */
+        /* Apply global font and background */
         html, body, [class*="css"], .stApp {
             font-family: 'Outfit', sans-serif;
-            background-color: #0d0e15;
-            color: #f1f3f9;
+            background-color: #080710;
+            color: #f6f8fc;
+        }
+        
+        /* Smooth Entrance Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animated-section {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         
         /* Custom card elements */
         .glass-card {
-            background: rgba(22, 28, 45, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(17, 22, 39, 0.65);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 20px;
-            transition: transform 0.2s ease, border-color 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
         }
         
-        /* Custom image framing */
+        /* Custom image framing with subtle zoom transition */
+        .img-wrap {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            position: relative;
+        }
+        
         .hotel-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 12px;
+            transition: transform 0.4s ease;
+        }
+        .glass-card:hover .hotel-image {
+            transform: scale(1.05);
         }
         
         .destination-image {
             width: 100%;
             height: 140px;
             object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 10px;
+            transition: transform 0.4s ease;
+        }
+        .glass-card:hover .destination-image {
+            transform: scale(1.06);
         }
         
         /* Badges & Tags */
         .badge {
-            background-color: rgba(99, 102, 241, 0.2);
-            color: #818cf8;
-            padding: 4px 10px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            color: #a5b4fc;
+            padding: 4px 12px;
             border-radius: 99px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             display: inline-block;
             margin-right: 6px;
             margin-bottom: 6px;
         }
         .rating-badge {
-            background-color: rgba(245, 158, 11, 0.2);
+            background-color: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
             color: #fbbf24;
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 99px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             display: inline-block;
             margin-bottom: 6px;
@@ -85,32 +117,53 @@ st.markdown("""
         
         /* Header typography */
         .gradient-text {
-            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
+            background: linear-gradient(135deg, #a5b4fc 0%, #a855f7 50%, #6366f1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 700;
+            letter-spacing: -0.5px;
         }
         
-        /* Invoice Receipt Design */
+        /* Invoice Receipt Design as a Premium Boarding Pass */
         .receipt-container {
-            background: #111827;
-            border: 1px dashed rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 24px;
-            font-family: monospace;
-            color: #e5e7eb;
+            background: linear-gradient(135deg, #141124 0%, #08070f 100%);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+        .receipt-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6366f1, #a855f7, #6366f1);
         }
         
         /* Sidebar styling override */
         section[data-testid="stSidebar"] {
-            background-color: #0b0c10;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            background-color: #06050a;
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
         }
         
         /* Align layout buttons and elements */
         div.stButton > button {
-            border-radius: 8px !important;
-            transition: all 0.2s ease;
+            border-radius: 10px !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background-color: rgba(255, 255, 255, 0.03) !important;
+            color: #f1f3f9 !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        div.stButton > button:hover {
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            background-color: rgba(139, 92, 246, 0.1) !important;
+            color: #c084fc !important;
+            transform: translateY(-1px);
         }
     </style>
 """, unsafe_allow_html=True)
@@ -201,10 +254,10 @@ def call_openrouter_api(messages):
     ]
 
     system_message = (
-        "You are an expert AI Travel Planner inspired by Layla.ai. Engage naturally with the user, "
+        "You are an expert AI Travel Planner. Engage naturally with the user, "
         "and proactively attempt to extract their desired destination. "
         "When the user mentions or requests a travel destination (such as Tokyo, Paris, or New York), "
-        "you MUST call the 'fetch_hotels' function to query the system database. "
+        "you MUST call the 'fetch_hotels' function to query the API. "
         "Do not write down hypothetical hotel listings yourself. Let the function call handle the data retrieval."
     )
 
@@ -224,7 +277,7 @@ def call_openrouter_api(messages):
 # --- Split-Screen UI Layout ---
 title_col1, title_col2 = st.columns([1, 1])
 with title_col1:
-    st.markdown("## ✈️ AI Trip Planner <span class='badge'>POC</span>", unsafe_allow_html=True)
+    st.markdown("## AI Trip Planner <span class='badge'>POC</span>", unsafe_allow_html=True)
 with title_col2:
     st.markdown("<div style='text-align: right; margin-top: 10px;'><span class='badge'>Interactive Canvas</span></div>", unsafe_allow_html=True)
 
@@ -282,7 +335,7 @@ with left_col:
                                         st.session_state.step = "search_results"
                                         
                                         assistant_reply = (
-                                            f"I have successfully searched the database for hotels in '{destination}'. "
+                                            f"I have successfully fetched hotels from the API for '{destination}'. "
                                             "Please check the right display panel to browse the available properties!"
                                         )
                                     else:
@@ -316,8 +369,10 @@ with right_col:
             with dest_cols[idx]:
                 st.markdown(
                     f"""
-                    <div class='glass-card'>
-                        <img class='destination-image' src='{dest["image_url"]}' alt='{dest["name"]}' />
+                    <div class='glass-card animated-section'>
+                        <div class='img-wrap'>
+                            <img class='destination-image' src='{dest["image_url"]}' alt='{dest["name"]}' />
+                        </div>
                         <h4 style='margin: 8px 0 4px 0;'>{dest["name"]}</h4>
                         <p style='font-size: 0.85rem; color: #a5b4fc; margin-bottom: 12px;'>{dest["tagline"]}</p>
                     </div>
@@ -353,11 +408,13 @@ with right_col:
             for hotel in st.session_state.current_hotels:
                 st.markdown(
                     f"""
-                    <div class='glass-card'>
-                        <img class='hotel-image' src='{hotel["image_url"]}' alt='{hotel["name"]}' />
+                    <div class='glass-card animated-section'>
+                        <div class='img-wrap'>
+                            <img class='hotel-image' src='{hotel["image_url"]}' alt='{hotel["name"]}' />
+                        </div>
                         <h4 style='margin: 8px 0 4px 0;'>{hotel["name"]}</h4>
                         <div style='margin-bottom: 10px;'>
-                            <span class='rating-badge'>★ {hotel["rating"]}</span>
+                            <span class='rating-badge'>Rating: {hotel["rating"]}</span>
                             <span class='badge'>${hotel["price_per_night"]} / night</span>
                         </div>
                         <p style='font-size: 0.9rem; color: #cbd5e1;'>{hotel["description"][:120]}...</p>
@@ -382,10 +439,12 @@ with right_col:
             
         st.markdown(
             f"""
-            <div class='glass-card'>
-                <img class='hotel-image' src='{hotel["image_url"]}' alt='{hotel["name"]}' />
+            <div class='glass-card animated-section'>
+                <div class='img-wrap'>
+                    <img class='hotel-image' src='{hotel["image_url"]}' alt='{hotel["name"]}' />
+                </div>
                 <div style='margin-bottom: 12px;'>
-                    <span class='rating-badge'>★ {hotel["rating"]}</span>
+                    <span class='rating-badge'>Rating: {hotel["rating"]}</span>
                     <span class='badge'>${hotel["price_per_night"]} / night</span>
                 </div>
                 <p style='margin-bottom: 16px;'>{hotel["description"]}</p>

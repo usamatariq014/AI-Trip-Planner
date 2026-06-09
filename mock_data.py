@@ -1,11 +1,11 @@
-# Mock dataset simulating a local travel database
+# Mock dataset simulating a local travel API
 
 DESTINATIONS = [
     {
         "id": "tokyo",
         "name": "Tokyo",
         "tagline": "Neon lights and ancient temples",
-        "image_url": "https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?auto=format&fit=crop&w=800&q=80",
+        "image_url": "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
         "description": "Experience the perfect blend of ultra-modern technology and centuries-old culture in Japan's bustling capital."
     },
     {
@@ -92,7 +92,7 @@ HOTELS = [
     }
 ]
 
-# Helper function to match destination string to database
+# Helper function to match destination string to API
 def fetch_hotels(destination_query: str):
     q = destination_query.lower().strip()
     # Normalize destination queries
