@@ -437,39 +437,34 @@ with right_col:
         st.markdown("#### Booking Receipt")
         
         st.markdown(
-            f"""
-            <div class='receipt-container'>
-                <div style='text-align: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 16px;'>
-                    <h3 style='margin: 0; color: #818cf8;'>BOOKING CONFIRMATION</h3>
-                    <p style='margin: 4px 0 0 0; font-size: 0.9rem;'>CONFIRMATION ID: {receipt["confirmation_id"]}</p>
-                </div>
-                
-                <div style='margin-bottom: 12px;'>
-                    <strong>Hotel:</strong> {receipt["hotel_name"]}<br/>
-                    <strong>Destination:</strong> {receipt["destination"]}<br/>
-                    <strong>Duration:</strong> {receipt["nights"]} Night(s)
-                </div>
-                
-                <div style='border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px;'>
-                    <div style='display: flex; justify-content: space-between;'>
-                        <span>Base Cost ({receipt["nights"]} x ${receipt["price_per_night"]}):</span>
-                        <span>${receipt["base_price"]}</span>
-                    </div>
-                    <div style='display: flex; justify-content: space-between; margin-top: 6px;'>
-                        <span>Taxes & Fees (12%):</span>
-                        <span>${receipt["taxes"]}</span>
-                    </div>
-                    <div style='display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 8px; font-weight: bold; font-size: 1.1rem; color: #818cf8;'>
-                        <span>TOTAL CHARGED:</span>
-                        <span>${receipt["total_price"]}</span>
-                    </div>
-                </div>
-                
-                <div style='text-align: center; margin-top: 20px; font-size: 0.8rem; color: #9ca3af;'>
-                    Thank you for booking with AI Trip Planner!
-                </div>
-            </div>
-            """,
+            f"""<div class='receipt-container'>
+<div style='text-align: center; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 12px; margin-bottom: 16px;'>
+<h3 style='margin: 0; color: #818cf8;'>BOOKING CONFIRMATION</h3>
+<p style='margin: 4px 0 0 0; font-size: 0.9rem;'>CONFIRMATION ID: {receipt["confirmation_id"]}</p>
+</div>
+<div style='margin-bottom: 12px;'>
+<strong>Hotel:</strong> {receipt["hotel_name"]}<br/>
+<strong>Destination:</strong> {receipt["destination"]}<br/>
+<strong>Duration:</strong> {receipt["nights"]} Night(s)
+</div>
+<div style='border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px;'>
+<div style='display: flex; justify-content: space-between;'>
+<span>Base Cost ({receipt["nights"]} x ${receipt["price_per_night"]}):</span>
+<span>${receipt["base_price"]}</span>
+</div>
+<div style='display: flex; justify-content: space-between; margin-top: 6px;'>
+<span>Taxes & Fees (12%):</span>
+<span>${receipt["taxes"]}</span>
+</div>
+<div style='display: flex; justify-content: space-between; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 8px; font-weight: bold; font-size: 1.1rem; color: #818cf8;'>
+<span>TOTAL CHARGED:</span>
+<span>${receipt["total_price"]}</span>
+</div>
+</div>
+<div style='text-align: center; margin-top: 20px; font-size: 0.8rem; color: #9ca3af;'>
+Thank you for booking with AI Trip Planner!
+</div>
+</div>""",
             unsafe_allow_html=True
         )
         
