@@ -50,10 +50,19 @@ st.markdown("""
             backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             margin-bottom: 20px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .dest-card {
+            height: 290px;
+        }
+        .hotel-card {
+            height: 380px;
         }
         .glass-card:hover {
             border-color: rgba(99, 102, 241, 0.4);
@@ -69,25 +78,53 @@ st.markdown("""
             margin-bottom: 14px;
             position: relative;
         }
+        .dest-card .img-wrap {
+            height: 130px;
+        }
+        .hotel-card .img-wrap {
+            height: 180px;
+        }
         
-        .hotel-image {
+        .hotel-image, .destination-image {
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
             transition: transform 0.4s ease;
         }
         .glass-card:hover .hotel-image {
             transform: scale(1.05);
         }
-        
-        .destination-image {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
         .glass-card:hover .destination-image {
             transform: scale(1.06);
+        }
+        
+        /* Make typography and layout responsive */
+        @media (max-width: 768px) {
+            h1, h2, h3, h4, h5 {
+                font-size: calc(1.1rem + 0.5vw) !important;
+            }
+            .glass-card {
+                padding: 16px !important;
+            }
+            .dest-card, .hotel-card {
+                height: auto !important;
+            }
+            .dest-card .img-wrap, .hotel-card .img-wrap {
+                height: 150px !important;
+            }
+        }
+        
+        /* Fixed Left Panel (chat) and Scrolling Right Panel on Desktop */
+        @media (min-width: 769px) {
+            [data-testid="column"]:nth-of-type(1) {
+                position: fixed;
+                width: 52% !important;
+                z-index: 100;
+            }
+            [data-testid="column"]:nth-of-type(2) {
+                margin-left: 55% !important;
+                width: 45% !important;
+            }
         }
         
         /* Badges & Tags */
@@ -250,6 +287,48 @@ def call_openrouter_api(messages):
                     "required": ["destination"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "select_hotel",
+                "description": "Update the right display pane to show a specific hotel's details and description.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "hotel_id": {
+                            "type": "string",
+                            "description": "The name or ID of the hotel to display, e.g. 'Le Marais Boutique Hotel', 'plaza'."
+                        }
+                    },
+                    "required": ["hotel_id"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "book_hotel",
+                "description": "Book a specific hotel for the user. Requires hotel identifier, number of nights, and number of rooms.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "hotel_id": {
+                            "type": "string",
+                            "description": "The name or ID of the hotel to book, e.g. 'tokyo-luxury', 'The Aman Tokyo Oasis'."
+                        },
+                        "nights": {
+                            "type": "integer",
+                            "description": "The number of nights to book."
+                        },
+                        "rooms": {
+                            "type": "integer",
+                            "description": "The number of rooms to book."
+                        }
+                    },
+                    "required": ["hotel_id", "nights", "rooms"]
+                }
+            }
         }
     ]
 
@@ -258,7 +337,10 @@ def call_openrouter_api(messages):
         "and proactively attempt to extract their desired destination. "
         "When the user mentions or requests a travel destination (such as Tokyo, Paris, or New York), "
         "you MUST call the 'fetch_hotels' function to query the API. "
-        "Do not write down hypothetical hotel listings yourself. Let the function call handle the data retrieval."
+        "When the user indicates they want to book a hotel or see details for a hotel, you MUST call the 'select_hotel' function "
+        "to update the display pane on the right. If the user has not specified both the number of nights and rooms, "
+        "ask clarifying questions (e.g., 'How many nights and rooms would you like to stay?'). "
+        "Once you have the hotel name/ID, number of nights, and number of rooms, you MUST call the 'book_hotel' function."
     )
 
     full_messages = [{"role": "system", "content": system_message}] + messages
@@ -349,6 +431,73 @@ with left_col:
                                     
                                 except Exception as parse_err:
                                     st.error(f"Failed to parse tool call: {str(parse_err)}")
+                            elif tool_call.function.name == "book_hotel":
+                                try:
+                                    arguments = json.loads(tool_call.function.arguments)
+                                    hotel_id = arguments.get("hotel_id", "")
+                                    nights = int(arguments.get("nights", 1))
+                                    rooms = int(arguments.get("rooms", 1))
+                                    
+                                    # Find hotel
+                                    hotel = mock_data.find_hotel(hotel_id)
+                                    
+                                    if hotel:
+                                        confirmation_id = f"TRIP-{''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))}"
+                                        base_price = hotel["price_per_night"] * nights * rooms
+                                        taxes = int(base_price * 0.12)
+                                        total_price = base_price + taxes
+                                        
+                                        st.session_state.selected_hotel = hotel
+                                        st.session_state.receipt = {
+                                            "confirmation_id": confirmation_id,
+                                            "hotel_name": hotel["name"],
+                                            "destination": hotel["destination"].upper(),
+                                            "price_per_night": hotel["price_per_night"],
+                                            "nights": nights,
+                                            "rooms": rooms,
+                                            "base_price": base_price,
+                                            "taxes": taxes,
+                                            "total_price": total_price
+                                        }
+                                        st.session_state.step = "receipt"
+                                        
+                                        assistant_reply = (
+                                            f"I have successfully booked '{hotel['name']}' for you. "
+                                            f"Details: {nights} nights, {rooms} rooms. "
+                                            "Your booking receipt has been generated in the visual display pane on the right!"
+                                        )
+                                    else:
+                                        assistant_reply = (
+                                            f"I tried to book '{hotel_id}', but could not find a hotel matching that identifier. "
+                                            "Please check the available hotels list."
+                                        )
+                                        
+                                    st.session_state.chat_history.append({"role": "assistant", "content": assistant_reply})
+                                    st.rerun()
+                                    
+                                except Exception as parse_err:
+                                    st.error(f"Failed to parse booking tool call: {str(parse_err)}")
+                            elif tool_call.function.name == "select_hotel":
+                                try:
+                                    arguments = json.loads(tool_call.function.arguments)
+                                    hotel_id = arguments.get("hotel_id", "")
+                                    
+                                    hotel = mock_data.find_hotel(hotel_id)
+                                    if hotel:
+                                        st.session_state.selected_hotel = hotel
+                                        st.session_state.step = "detail_view"
+                                        
+                                        # Keep LLM assistant text response in sync if present
+                                        if message.content:
+                                            st.session_state.chat_history.append({"role": "assistant", "content": message.content})
+                                        else:
+                                            st.session_state.chat_history.append({
+                                                "role": "assistant",
+                                                "content": f"Showing details for {hotel['name']} on the right display panel. I can finalize this booking for you: just let me know how many nights and rooms you need!"
+                                            })
+                                        st.rerun()
+                                except Exception as parse_err:
+                                    st.error(f"Failed to parse select hotel tool call: {str(parse_err)}")
                     else:
                         # Standard text response
                         st.session_state.chat_history.append({"role": "assistant", "content": message.content})
@@ -369,7 +518,7 @@ with right_col:
             with dest_cols[idx]:
                 st.markdown(
                     f"""
-                    <div class='glass-card animated-section'>
+                    <div class='glass-card dest-card animated-section'>
                         <div class='img-wrap'>
                             <img class='destination-image' src='{dest["image_url"]}' alt='{dest["name"]}' />
                         </div>
@@ -408,7 +557,7 @@ with right_col:
             for hotel in st.session_state.current_hotels:
                 st.markdown(
                     f"""
-                    <div class='glass-card animated-section'>
+                    <div class='glass-card hotel-card animated-section'>
                         <div class='img-wrap'>
                             <img class='hotel-image' src='{hotel["image_url"]}' alt='{hotel["name"]}' />
                         </div>
@@ -461,12 +610,16 @@ with right_col:
         st.markdown("---")
         
         # Select booking parameters
-        nights = st.number_input("Number of Nights", min_value=1, max_value=30, value=3, step=1)
+        param_col1, param_col2 = st.columns(2)
+        with param_col1:
+            nights = st.number_input("Number of Nights", min_value=1, max_value=30, value=3, step=1)
+        with param_col2:
+            rooms = st.number_input("Number of Rooms", min_value=1, max_value=10, value=1, step=1)
         
         if st.button("Confirm Booking", key="confirm_booking", use_container_width=True):
             # Calculate receipt
             confirmation_id = f"TRIP-{''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=6))}"
-            base_price = hotel["price_per_night"] * nights
+            base_price = hotel["price_per_night"] * nights * rooms
             taxes = int(base_price * 0.12)
             total_price = base_price + taxes
             
@@ -476,6 +629,7 @@ with right_col:
                 "destination": st.session_state.selected_destination,
                 "price_per_night": hotel["price_per_night"],
                 "nights": nights,
+                "rooms": rooms,
                 "base_price": base_price,
                 "taxes": taxes,
                 "total_price": total_price
@@ -504,11 +658,12 @@ with right_col:
 <div style='margin-bottom: 12px;'>
 <strong>Hotel:</strong> {receipt["hotel_name"]}<br/>
 <strong>Destination:</strong> {receipt["destination"]}<br/>
-<strong>Duration:</strong> {receipt["nights"]} Night(s)
+<strong>Duration:</strong> {receipt["nights"]} Night(s)<br/>
+<strong>Rooms:</strong> {receipt.get("rooms", 1)} Room(s)
 </div>
 <div style='border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 12px; margin-top: 12px;'>
 <div style='display: flex; justify-content: space-between;'>
-<span>Base Cost ({receipt["nights"]} x ${receipt["price_per_night"]}):</span>
+<span>Base Cost ({receipt["nights"]} nights x {receipt.get("rooms", 1)} rooms x ${receipt["price_per_night"]}):</span>
 <span>${receipt["base_price"]}</span>
 </div>
 <div style='display: flex; justify-content: space-between; margin-top: 6px;'>

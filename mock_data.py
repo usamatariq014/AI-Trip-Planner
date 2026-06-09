@@ -108,3 +108,10 @@ def fetch_hotels(destination_query: str):
         return []
         
     return [h for h in HOTELS if h["destination"] == target]
+
+def find_hotel(hotel_query: str):
+    q = hotel_query.lower().strip()
+    for h in HOTELS:
+        if q == h["id"].lower() or q in h["name"].lower() or h["name"].lower() in q:
+            return h
+    return None
