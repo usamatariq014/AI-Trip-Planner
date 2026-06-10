@@ -110,8 +110,52 @@ def fetch_hotels(destination_query: str):
     return [h for h in HOTELS if h["destination"] == target]
 
 def find_hotel(hotel_query: str):
+    import unicodedata
+    import re
+
     q = hotel_query.lower().strip()
+    if not q:
+        return None
+
+    # Helper to clean and normalize a string (remove accents, keep letters/numbers/spaces)
+    def clean_str(s):
+        s_norm = ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')
+        return re.sub(r'\s+', ' ', re.sub(r'[^a-zA-Z0-9\s]', ' ', s_norm.lower())).strip()
+
+    q_clean = clean_str(q)
+    q_words = set(q_clean.split())
+
+    best_match = None
+    best_score = (-1, -1, 0)  # (overlap_count, is_substring, negative_length_difference)
+
     for h in HOTELS:
-        if q == h["id"].lower() or q in h["name"].lower() or h["name"].lower() in q:
+        # Direct exact match check first
+        if q == h["id"].lower() or q == h["name"].lower():
             return h
+
+        h_name_clean = clean_str(h["name"])
+        h_id_clean = clean_str(h["id"])
+        
+        # Calculate word overlap
+        h_words = set(h_name_clean.split())
+        h_words.update(h_id_clean.split())
+        
+        overlap_count = len(q_words.intersection(h_words))
+        
+        # Calculate if substring
+        is_substring = 1 if (q_clean in h_name_clean or q_clean in h_id_clean or h_name_clean in q_clean) else 0
+        
+        # Calculate length difference (closer is better, so maximize the negative difference)
+        len_diff = -abs(len(q_clean) - len(h_name_clean))
+        
+        score = (overlap_count, is_substring, len_diff)
+        
+        if score > best_score:
+            best_score = score
+            best_match = h
+
+    # Only return if there is at least some word overlap
+    if best_score[0] > 0:
+        return best_match
+
     return None
