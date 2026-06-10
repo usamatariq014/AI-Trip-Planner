@@ -39,7 +39,7 @@ st.markdown("""
         
         div[data-testid="stMainBlockContainer"] {
             max-width: 100% !important;
-            padding: 1.5rem 2.5rem 1rem 2.5rem !important;
+            padding: 5rem 2.5rem 1rem 2.5rem !important;
             height: 100vh !important;
             display: flex !important;
             flex-direction: column !important;
@@ -64,7 +64,7 @@ st.markdown("""
         /* Columns block */
         div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:nth-child(2) {
             flex: 1 1 auto !important;
-            height: calc(100vh - 120px) !important;
+            height: calc(100vh - 176px) !important;
             overflow: hidden !important;
         }
         
@@ -113,14 +113,14 @@ st.markdown("""
         
         /* Left Column Chat container styling */
         div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:nth-child(2) > div[data-testid="stColumn"]:first-child div[data-testid="stVerticalBlockBorderWrapper"] {
-            height: calc(100vh - 240px) !important;
+            height: calc(100vh - 296px) !important;
             overflow-y: auto !important;
             margin-bottom: 0.5rem !important;
         }
         
         /* Right Column card container styling */
         div[data-testid="stMainBlockContainer"] > div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"]:nth-child(2) > div[data-testid="stColumn"]:last-child div[data-testid="stVerticalBlockBorderWrapper"] {
-            height: calc(100vh - 275px) !important;
+            height: calc(100vh - 331px) !important;
             overflow-y: auto !important;
             margin-bottom: 0.5rem !important;
         }
@@ -131,7 +131,7 @@ st.markdown("""
             object-fit: cover !important;
             width: 100% !important;
             height: 100% !important;
-            max-height: calc(100vh - 315px) !important;
+            max-height: calc(100vh - 371px) !important;
             transition: transform 0.4s ease !important;
         }
         
@@ -203,7 +203,7 @@ st.markdown("""
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow-y: auto !important;
-            height: calc(100vh - 275px) !important;
+            height: calc(100vh - 331px) !important;
             animation: slideUp 0.5s ease-out forwards;
         }
         .receipt-container::before {
